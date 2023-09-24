@@ -6,8 +6,6 @@ import axios from "axios";
 import { formatearFecha } from "../utilities/formater";
 import AwesomeAlert from 'react-native-awesome-alerts';
 import ViewConfirmation from "../components/viewConfirmation";
-// import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-// import ViewConfirmation from "../components/viewConfirmation";
 
 const ReadQR = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
@@ -17,15 +15,8 @@ const ReadQR = ({ navigation }) => {
   const [showAlert, setShowAlert] = useState(false);
   const [isProgress, setIsProgress] = useState(false);
 
-  // variables para el desplegable
-  // const sheetRef = useRef(null);
-  // const snapPoints = ["40%"];
-  // const [isOpen, setIsOpen] = useState(true);
-  // const handleSheetChange = () => {
-    // console.log("handleSheetChange", index);
-  // }
-  // useCallback((index) => {
-  // }, []);
+  // response api
+  const [dataUser, setdataUser] = useState();
 
   // permisos de la camara
   const askForCameraPermission = () => {
@@ -38,7 +29,6 @@ const ReadQR = ({ navigation }) => {
   // what happens when we scan the bar code
   const handleBarCodeScanned = async ({ type, data }) => {
     setScanned(true);
-    setShowAlert(true);
     setIsProgress(true);
 
     try {
@@ -53,7 +43,9 @@ const ReadQR = ({ navigation }) => {
           "phone": parseData.phone,
         }
       );
-      console.log(readQRSearch.data);
+      console.log(readQRSearch.data); // mostrar en consola
+      setdataUser(readQRSearch.data); // setear los datos de la respuesta
+      setShowAlert(true); //mostrar el modal
     } catch (error) {
       console.log('error: ', error);
     } finally{
@@ -117,10 +109,20 @@ const ReadQR = ({ navigation }) => {
           onPress={() => {
             setText("");
             setScanned(false);
+            setdataUser();
           }}
           color="tomato"
         />
       )}
+      {
+        dataUser && (
+          <View >
+            <Text style={styles.mainText}>Respuesta api: {dataUser.message}</Text>
+            <Text style={styles.mainText}>acceso api: {dataUser.access ? "Permitido" : "Denegado"}</Text>
+            <Text style={styles.mainText}>usuario api: {dataUser.userFound.fullname}</Text>
+          </View>
+        )
+      }
 
       {/* awesome alert */}
       <AwesomeAlert
@@ -148,7 +150,7 @@ const ReadQR = ({ navigation }) => {
 
         customView={
           <View>
-            <ViewConfirmation/>
+            <ViewConfirmation dataUser={dataUser}/>
           </View>
         }
 
