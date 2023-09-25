@@ -1,22 +1,13 @@
-import React from "react";
-import { StyleSheet, View, Text, Button, Image, Alert } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
-
-import formatearFecha from "../utilities/formater.js"
+import React, { useEffect } from "react";
+import { StyleSheet, View, Text, Image } from "react-native";
 
 const ViewConfirmation = ({dataUser}) => {
-
-  const opciones = {
-    day: 'numeric',
-    month: 'long',
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true
-  };
 
   const { access, message, userFound } = dataUser;
   const { email, fullname, identification, isPress, lastReadDate, phone } = userFound;
   console.log('valores dentro del modal', access, message, userFound);
+
+  useEffect(() => {})
 
   return (
     <View style={styles.container}>
@@ -39,7 +30,7 @@ const ViewConfirmation = ({dataUser}) => {
             Acceso: {access ? 'Permitido' : 'Restringido'}
           </Text>
           <Text
-            style={[styles.text, { color: `${!access && 'red'}` }]}
+            style={styles.text}
           >
             {message}
           </Text>
@@ -48,39 +39,43 @@ const ViewConfirmation = ({dataUser}) => {
 
       <View style={styles.separator}></View>
 
-      <Text
+      {fullname && (<Text
         style={[
           styles.text,
           { color: "gray", marginLeft: 15, marginVertical: 5 },
         ]}
       >
         NOMBRE: <Text style={[styles.text]}> {fullname}</Text>
-      </Text>
-      <Text
+      </Text>)}
+
+      {email && (<Text
         style={[
           styles.text,
           { color: "gray", marginLeft: 15, marginVertical: 5 },
         ]}
       >
         EMAIL: <Text style={[styles.text]}> {email}</Text>
-      </Text>
-      <Text
+      </Text>)}
+
+      {identification && (<Text
         style={[
           styles.text,
           { color: "gray", marginLeft: 15, marginVertical: 5 },
         ]}
       >
         CEDULA: <Text style={[styles.text]}> {identification}</Text>
-      </Text>
-      <Text
+      </Text>)}
+
+      {isPress && (<Text
         style={[
           styles.text,
           { color: "gray", marginLeft: 15, marginVertical: 5 },
         ]}
       >
-        ROL: <Text style={[styles.text]}> {isPress ? "Prensa": "Usuario"}</Text>
-      </Text>
-      <Text
+        ROL: <Text style={[styles.text]}> {isPress !== "NO" ? "Prensa": "Usuario"}</Text>
+      </Text>)}
+
+      {lastReadDate && (<Text
         style={[
           styles.text,
           { color: "gray", marginLeft: 15, marginVertical: 5 },
@@ -97,16 +92,10 @@ const ViewConfirmation = ({dataUser}) => {
             second: "2-digit",
           })
         }
-      </Text>
-      </Text>
+        </Text>
+      </Text>)}
 
       <View style={styles.separator}></View>
-      {/*
-      <TouchableOpacity onPress={() => Alert.alert("Thanks for your purchase")}>
-        <View style={styles.confirmButton}>
-          <Text style={{ color: "#fff", fontSize: 30 }}>💸</Text>
-        </View>
-      </TouchableOpacity> */}
     </View>
   );
 };

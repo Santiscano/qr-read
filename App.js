@@ -7,8 +7,8 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      {/* <StackNavigation/> */}
-      <Drawer/>
+      <StackNavigation/>
+      {/* <Drawer/> */}
     </NavigationContainer>
   )
 }

@@ -16,3 +16,16 @@ export function formatearFecha(fecha) {
   const fecha_formateada = fecha_dt.toLocaleString('es-ES', opciones);
   return fecha_formateada;
 }
+
+export function formaterDate(fecha){
+  const fecha_formateada = new Date(fecha).toLocaleString("es-ES", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  })
+  return fecha_formateada
+}
+

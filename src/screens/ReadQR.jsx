@@ -1,9 +1,8 @@
 import React from "react";
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
-import { StyleSheet, Text, View, Button } from "react-native";
+import { StyleSheet, Text, View, Button, ActivityIndicator } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import axios from "axios";
-import { formatearFecha } from "../utilities/formater";
 import AwesomeAlert from 'react-native-awesome-alerts';
 import ViewConfirmation from "../components/viewConfirmation";
 
@@ -16,6 +15,7 @@ const ReadQR = ({ navigation }) => {
   const [isProgress, setIsProgress] = useState(false);
 
   // response api
+  const [validateInfo, setValidateInfo] = useState(false);
   const [dataUser, setdataUser] = useState();
 
   // permisos de la camara
@@ -30,10 +30,12 @@ const ReadQR = ({ navigation }) => {
   const handleBarCodeScanned = async ({ type, data }) => {
     setScanned(true);
     setIsProgress(true);
+    setValidateInfo(true);
 
     try {
       let parseData = JSON.parse(data);
       setText(parseData);
+      console.log('se rompe despues de esto')
 
       const readQRSearch = await axios.post(
         "https://event-registered-tickets.vercel.app/api/validateUser",
@@ -43,17 +45,25 @@ const ReadQR = ({ navigation }) => {
           "phone": parseData.phone,
         }
       );
-      console.log(readQRSearch.data); // mostrar en consola
+      console.log('valor data',readQRSearch.data); // mostrar en consola
       setdataUser(readQRSearch.data); // setear los datos de la respuesta
       setShowAlert(true); //mostrar el modal
     } catch (error) {
       console.log('error: ', error);
     } finally{
     setIsProgress(false);
+    setValidateInfo(false);
     }
 
 
     // alert(`${readQRSearch.data.message} \n \nultima lectura: ${formatearFecha(readQRSearch.data.lastReadDate)} \nlectura actual: ${formatearFecha(readQRSearch.data.now)}`);
+  };
+
+  const handleResetView = () => {
+    setText("");
+    setScanned(false);
+    // setdataUser(); //esta es la linea que rompe
+    setShowAlert(false);
   };
 
   // request camera permission
@@ -70,7 +80,7 @@ const ReadQR = ({ navigation }) => {
   if (hasPermission === null) {
     return (
       <View style={styles.container}>
-        <Text>Se requieren permisos de la camara</Text>
+        <Text style={{ color:"#fff" }}>Se requieren permisos de la camara</Text>
       </View>
     );
   }
@@ -78,7 +88,7 @@ const ReadQR = ({ navigation }) => {
   if (hasPermission === false) {
     return (
       <View style={styles.container}>
-        <Text style={{ margin: 10 }}>No pudimos acceder a tu camara</Text>
+        <Text style={{ margin: 10, color:"#fff", }}>No pudimos acceder a tu camara</Text>
         <Button
           title={"Permitir usar camara"}
           onPress={() => askForCameraPermission()}
@@ -90,39 +100,17 @@ const ReadQR = ({ navigation }) => {
   // view if permission true
   return (
     <View style={styles.container}>
-      <View style={styles.barcodebox}>
-        <BarCodeScanner
-          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          style={{ height: 400, width: 4000 }}
-        />
-      </View>
-      {text !== "" && (
-        <View>
-          <Text style={styles.mainText}>Usuario: {text.fullname}</Text>
-          <Text style={styles.mainText}>Email: {text.email}</Text>
-          <Text style={styles.mainText}>Es Prensa?: {text.isPress}</Text>
-        </View>
-      )}
-      {scanned && (
-        <Button
-          title={"Escanear de nuevo"}
-          onPress={() => {
-            setText("");
-            setScanned(false);
-            setdataUser();
-          }}
-          color="tomato"
-        />
-      )}
-      {
-        dataUser && (
-          <View >
-            <Text style={styles.mainText}>Respuesta api: {dataUser.message}</Text>
-            <Text style={styles.mainText}>acceso api: {dataUser.access ? "Permitido" : "Denegado"}</Text>
-            <Text style={styles.mainText}>usuario api: {dataUser.userFound.fullname}</Text>
-          </View>
+      {!validateInfo ? (
+        <View style={styles.barcodebox}>
+          <BarCodeScanner
+            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+            style={{ height: 400, width: 4000 }}
+          />
+        </View>) :(
+          <ActivityIndicator size="large"></ActivityIndicator>
         )
       }
+
 
       {/* awesome alert */}
       <AwesomeAlert
@@ -134,23 +122,25 @@ const ReadQR = ({ navigation }) => {
         // message="este es el mensaje"
         // messageStyle={{}}
 
-        showCancelButton={true}
-        cancelText="Cancelar"
-        cancelButtonStyle={{}}
-        onCancelPressed={() => {
-          setShowAlert(false);
-        }}
+        // showCancelButton={true}
+        // cancelText="Cancelar"
+        // cancelButtonStyle={{}}
+        // onCancelPressed={() => {
+        //   setShowAlert(false);
+        // }}
 
         showConfirmButton={true}
-        confirmText="Confirmar"
-        confirmButtonStyle={{}}
+        confirmText="CERRAR"
+        confirmButtonStyle={styles.buttonCloseModal}
         onConfirmPressed={() => {
-          setShowAlert(false);
+          handleResetView()
         }}
 
         customView={
           <View>
-            <ViewConfirmation dataUser={dataUser}/>
+            <ViewConfirmation
+              dataUser={dataUser}
+            />
           </View>
         }
 
@@ -197,5 +187,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 3,
     color:"#fff",
+  },
+  buttonCloseModal: {
+    padding: 12,
+    backgroundColor: "rgba(26,33,64,1)",
   },
 });
